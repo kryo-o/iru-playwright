@@ -1,0 +1,49 @@
+{
+    "name": "iru-playwright",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Playwright + TypeScript smoke suite for the iru (Kandji) dashboard.",
+    "scripts": {
+        "test": "npx playwright test",
+        "test:smoke": "npx playwright test --grep @smoke",
+        "test:headed": "npx playwright test --headed",
+        "test:ui": "npx playwright test --ui",
+        "test:debug": "npx playwright test --debug",
+        "report": "npx playwright show-report",
+        "lint": "npx eslint .",
+        "lint:fix": "npx eslint . --fix",
+        "format": "npx prettier --write .",
+        "typecheck": "npx tsc --noEmit",
+        "postinstall": "is-ci || husky"
+    },
+    "license": "UNLICENSED",
+    "devDependencies": {
+        "@playwright/cli": "^0.1.18",
+        "@playwright/test": "^1.62.1",
+        "@types/node": "^26.2.0",
+        "@typescript-eslint/eslint-plugin": "^8.66.0",
+        "@typescript-eslint/parser": "^8.34.1",
+        "eslint": "^10.8.1",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-define-config": "^2.1.0",
+        "eslint-plugin-playwright": "^2.11.0",
+        "eslint-plugin-prettier": "^5.5.6",
+        "husky": "^9.1.7",
+        "is-ci": "^4.1.0",
+        "jiti": "^2.7.0",
+        "lint-staged": "^17.3.0"
+    },
+    "dependencies": {
+        "dotenv": "^17.4.2",
+        "otpauth": "^9.4.1"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": [
+            "npx eslint --fix",
+            "npx prettier --write"
+        ]
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}
