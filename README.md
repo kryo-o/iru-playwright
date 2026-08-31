@@ -17,7 +17,7 @@ Playwright + TypeScript, page objects behind fixtures.
 
 ```bash
 npm ci
-npx playwright install chromium
+npx playwright install
 npx playwright-cli install-browser chromium   # separate browser, for live-app exploration
 ```
 
