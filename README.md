@@ -36,6 +36,7 @@ Create `env/.env` (gitignored — never commit it):
 
 ```bash
 npm test              # whole suite
+npm run test:cross    # whole suite on Chromium, Firefox and WebKit
 npm run test:headed   # watch it drive the browser
 npm run report        # open the last HTML report
 npm run lint

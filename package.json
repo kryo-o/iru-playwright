@@ -7,6 +7,7 @@
         "test": "npx playwright test",
         "test:smoke": "npx playwright test --grep @smoke",
         "test:headed": "npx playwright test --headed",
+        "test:cross": "CROSS_BROWSER=1 npx playwright test",
         "test:ui": "npx playwright test --ui",
         "test:debug": "npx playwright test --debug",
         "test:docker": "docker compose run --rm tests",

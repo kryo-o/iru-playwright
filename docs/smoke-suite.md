@@ -75,7 +75,12 @@ Worth saying out loud, because green here does not mean healthy:
   working shell would pass.
 - Devices is the primary object in the product and its detail view is not
   covered. Blueprints is.
-- No search, no filters, no cross-browser, one viewport.
+- No search and no filters.
+- One viewport, 1920x1080. Chromium, Firefox and WebKit all run at it,
+  so nothing here covers a narrow layout. WebKit is Safari's engine, not
+  Safari.
+- The Auth0 rejection test runs on Chromium only. Auth0 throttles by
+  source IP, so one rejected sign-in per run is the budget.
 
 None of these are accidents, but none of them are free either. If this suite
 grows, unauthenticated redirect and a Devices drill-down are the next two.

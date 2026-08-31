@@ -10,6 +10,8 @@ services:
             CI: 'true'
             # Selects env/.env.<name>. Unset falls back to env/.env.
             ENVIRONMENT: ${ENVIRONMENT:-}
+            # 1 adds the Firefox and WebKit projects; the image ships both.
+            CROSS_BROWSER: ${CROSS_BROWSER:-}
         volumes:
             # Credentials stay on the host, read-only to the container.
             - ./env:/app/env:ro
