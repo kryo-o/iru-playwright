@@ -13,16 +13,6 @@ const MIN_REMAINING_SECONDS = 5;
  * How many steps must pass between two codes.
  *
  * Three, and each one is load-bearing:
- *
- * - Auth0 will not accept a code it has already consumed (+1).
- * - It accepts the neighbouring step to tolerate clock drift, so the step
- *   either side of a consumed one counts as consumed too (+2).
- * - Which step Auth0 *attributes* a code to depends on its clock, not ours.
- *   A sub-second skew near a boundary makes it record our step N as N+1, which
- *   then makes our "fresh" N+2 adjacent to its record and rejected (+3).
- *
- * A gap of 2 passes most runs and fails intermittently on that last case —
- * observed as `The code you entered is invalid` on a repeat run.
  */
 const MIN_WINDOW_GAP = 3;
 

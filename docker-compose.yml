@@ -1,0 +1,26 @@
+services:
+    tests:
+        build: .
+        # Chromium exhausts Docker's default 64MB /dev/shm and dies mid-run
+        # with renderer crashes that name no cause.
+        shm_size: 1gb
+        environment:
+            # A container run is non-interactive: blob plus non-opening HTML
+            # reporter, retries on failure, `test.only` rejected.
+            CI: 'true'
+            # Selects env/.env.<name>. Unset falls back to env/.env.
+            ENVIRONMENT: ${ENVIRONMENT:-}
+        volumes:
+            # Credentials stay on the host, read-only to the container.
+            - ./env:/app/env:ro
+            # Reports land on the host instead of dying with the container.
+            - ./playwright-report:/app/playwright-report
+            - ./blob-report:/app/blob-report
+            - ./test-results:/app/test-results
+            # helpers/iru/totp.ts records the last-issued TOTP step under
+            # tmpdir(). Without a volume that gap resets on every run, and a
+            # quick rerun submits a code Auth0 has already consumed.
+            - totp-state:/tmp
+
+volumes:
+    totp-state:

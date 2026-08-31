@@ -3,8 +3,6 @@ import { Page } from '@playwright/test';
 /**
  * The in-app product guides are served by Pendo, loaded from this host.
  *
- * The agent script is the only entry point — the guide payloads it renders are
- * fetched by the agent itself, so blocking the host stops all of them.
  */
 const PENDO_URL_PATTERN = '**/*pendo.io/**';
 
