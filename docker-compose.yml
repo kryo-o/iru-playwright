@@ -12,6 +12,10 @@ services:
             ENVIRONMENT: ${ENVIRONMENT:-}
             # 1 adds the Firefox and WebKit projects; the image ships both.
             CROSS_BROWSER: ${CROSS_BROWSER:-}
+            # The VM has far less RAM than the host. Four workers across three
+            # engines exhausts it, and the resulting jank shifts the layout
+            # under in-flight clicks. Two is stable and finishes sooner.
+            PLAYWRIGHT_WORKERS: ${PLAYWRIGHT_WORKERS:-2}
         volumes:
             # Credentials stay on the host, read-only to the container.
             - ./env:/app/env:ro

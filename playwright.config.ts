@@ -56,6 +56,18 @@ export default defineConfig({
     fullyParallel: true,
 
     /*
+     * Unset means Playwright's default, half the cores. Override where memory
+     * rather than CPU is the limit: docker-compose.yml pins it, because three
+     * engines across four workers exhaust the Docker VM's RAM and the app then
+     * mounts its notification banner late enough to shift the sidebar
+     * mid-click, failing the stability check on an element that is on screen.
+     * Fewer workers finished sooner there than four plus the retries.
+     */
+    workers: process.env.PLAYWRIGHT_WORKERS
+        ? Number(process.env.PLAYWRIGHT_WORKERS)
+        : undefined,
+
+    /*
      * Deletes the cached session after the run, so the next one is forced
      * through a real sign-in. See helpers/iru/global-teardown.ts.
      */
