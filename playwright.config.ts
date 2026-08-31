@@ -16,6 +16,30 @@ const environmentPath = environment
 // quiet: dotenv v17+ prints promotional "injected env" banners by default
 dotenv.config({ path: environmentPath, quiet: true });
 
+/** Forced on every project so a section never renders its narrow layout. */
+const VIEWPORT = { width: 1920, height: 1080 } as const;
+
+/**
+ * Browsers under test. Firefox and WebKit are opt-in: CROSS_BROWSER=1.
+ *
+ * They are left out of the list entirely rather than deselected with
+ * `--project`, because `signout` depends on every browser project and
+ * Playwright runs a selected project's dependencies automatically — asking for
+ * chromium alone would drag firefox and webkit in behind it.
+ *
+ * All three share the one session `setup` writes: `storageState` is plain JSON,
+ * not a browser artefact.
+ */
+const BROWSERS = [
+    { name: 'chromium', device: devices['Desktop Chrome'] },
+    ...(process.env.CROSS_BROWSER === '1'
+        ? [
+              { name: 'firefox', device: devices['Desktop Firefox'] },
+              { name: 'webkit', device: devices['Desktop Safari'] },
+          ]
+        : []),
+];
+
 /**
  * Playwright Test Configuration
  * @see https://playwright.dev/docs/test-configuration
@@ -30,6 +54,18 @@ export default defineConfig({
      * race for a one-time code.
      */
     fullyParallel: true,
+
+    /*
+     * Unset means Playwright's default, half the cores. Override where memory
+     * rather than CPU is the limit: docker-compose.yml pins it, because three
+     * engines across four workers exhaust the Docker VM's RAM and the app then
+     * mounts its notification banner late enough to shift the sidebar
+     * mid-click, failing the stability check on an element that is on screen.
+     * Fewer workers finished sooner there than four plus the retries.
+     */
+    workers: process.env.PLAYWRIGHT_WORKERS
+        ? Number(process.env.PLAYWRIGHT_WORKERS)
+        : undefined,
 
     /*
      * Deletes the cached session after the run, so the next one is forced
@@ -90,26 +126,31 @@ export default defineConfig({
             testMatch: /.*\.setup\.ts/,
             use: {
                 ...devices['Desktop Chrome'],
-                viewport: { width: 1920, height: 1080 },
+                viewport: VIEWPORT,
             },
         },
 
-        {
-            name: 'chromium',
+        ...BROWSERS.map(({ name, device }) => ({
+            name,
             testIgnore: [/.*\.setup\.ts/, /signout\.spec\.ts/],
             use: {
-                ...devices['Desktop Chrome'],
-                viewport: { width: 1920, height: 1080 },
+                ...device,
+                viewport: VIEWPORT,
                 storageState: StorageStatePaths.IRU,
             },
             dependencies: ['setup'],
-        },
+        })),
 
         /*
          * Sign-out runs alone, after everything else. It invalidates the
          * session server-side, so the cached storageState is dead once it has
-         * run — inside `chromium` it would strip the session from tests still
-         * executing in parallel. `dependencies` is what orders it last.
+         * run — inside a browser project it would strip the session from tests
+         * still executing in parallel. `dependencies` is what orders it last,
+         * and it names every browser project so that holds cross-browser too.
+         *
+         * Chromium only: the flow is application behaviour, not engine
+         * behaviour, and the session it destroys is shared, so a second run of
+         * it in another browser could only ever fail.
          *
          * retries: 0 because a retry would start from that dead session and
          * fail on the sign-in screen, burying the real failure.
@@ -120,10 +161,10 @@ export default defineConfig({
             retries: 0,
             use: {
                 ...devices['Desktop Chrome'],
-                viewport: { width: 1920, height: 1080 },
+                viewport: VIEWPORT,
                 storageState: StorageStatePaths.IRU,
             },
-            dependencies: ['chromium'],
+            dependencies: BROWSERS.map(({ name }) => name),
         },
     ],
 });

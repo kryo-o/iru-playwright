@@ -82,10 +82,17 @@ export class DashboardPage {
      * The application redirects to its default landing section, so callers land
      * on Devices rather than a login form.
      *
-     * @returns {Promise<void>} Resolves when the document has loaded.
+     * Returns only once the sidebar has mounted. Before that the application
+     * paints a skeleton — the navigation links exist but the shell carrying
+     * `data-testid="sidebar"` does not — so a caller that acts straight after
+     * `domcontentloaded` can miss every sidebar locator. It surfaces under load,
+     * a cross-browser run being the reliable way to provoke it.
+     *
+     * @returns {Promise<void>} Resolves when the application shell is usable.
      */
     async open(): Promise<void> {
         await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+        await expect(this.sidebar.container).toBeVisible();
     }
 
     /**

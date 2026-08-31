@@ -80,7 +80,13 @@ const config = [
             'playwright/missing-playwright-await': 'error',
             'playwright/no-page-pause': 'error',
             'playwright/no-useless-await': 'error',
-            'playwright/no-skipped-test': 'error',
+            /*
+             * `allowConditional` keeps the ban on tests parked with a bare
+             * `test.skip()` while permitting `test.skip(condition, reason)`,
+             * which is a runtime modifier rather than a disabled test — it is
+             * how the Auth0 rejection case stays on Chromium alone.
+             */
+            'playwright/no-skipped-test': ['error', { allowConditional: true }],
 
             // Additional Playwright rules for Constitution compliance
             'playwright/no-wait-for-timeout': 'error', // WON'T: No Hard Waits

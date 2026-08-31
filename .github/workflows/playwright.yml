@@ -5,6 +5,17 @@ on:
         branches: [main]
     pull_request:
     workflow_dispatch:
+        inputs:
+            cross_browser:
+                description: 'Also run Firefox and WebKit'
+                type: boolean
+                default: false
+
+# Push and pull_request always run Chromium alone. Cross-browser is opt-in
+# through the dispatch input above: it triples the tests against a live tenant
+# and adds two browser downloads, for signal that does not change per commit.
+env:
+    CROSS_BROWSER: ${{ inputs.cross_browser && '1' || '0' }}
 
 jobs:
     test:
@@ -30,8 +41,13 @@ jobs:
             - name: Audit dependencies
               run: npm audit --audit-level=high
 
-            - name: Install Playwright browser
-              run: npx playwright install --with-deps chromium
+            - name: Install Playwright browsers
+              run: |
+                  if [ "$CROSS_BROWSER" = "1" ]; then
+                    npx playwright install --with-deps chromium firefox webkit
+                  else
+                    npx playwright install --with-deps chromium
+                  fi
 
             # Secrets arrive through `env:` rather than inline `${{ }}` so their
             # values are never spliced into the script text. The file key is

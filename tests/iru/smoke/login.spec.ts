@@ -63,11 +63,22 @@ test.describe('iru login', () => {
      * blocks one that accumulates them, so a hardcoded address goes permanently
      * red after enough runs. Do not add a second test like this without a
      * reason that outweighs the brute-force budget it spends.
+     *
+     * Chromium only, for the same reason: Auth0 also throttles by source IP, so
+     * running it once per browser would spend that budget three times a run for
+     * no extra signal — the rejection is Auth0's, not the engine's. The other
+     * cases here are refused client-side and cost nothing, so they run
+     * everywhere.
      */
     test(
         'should reject sign-in for an account that does not exist',
         { tag: '@smoke' },
-        async ({ loginPage, dashboardPage }) => {
+        async ({ loginPage, dashboardPage, browserName }) => {
+            test.skip(
+                browserName !== 'chromium',
+                'Auth0 throttles per identifier and per source IP; one rejected sign-in per run is the budget'
+            );
+
             const { email, password } = generateUnknownCredentials();
 
             await test.step('WHEN credentials for an unknown account are submitted', async () => {
