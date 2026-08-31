@@ -54,6 +54,26 @@ export class DashboardPage {
         return this.announcementDialog.getByRole('button', { name: 'Got it!' });
     }
 
+    /** Guard the application raises when leaving a view it considers dirty. */
+    get unsavedViewDialog(): Locator {
+        return this.page.getByRole('dialog', { name: 'Save your view?' });
+    }
+
+    get leaveWithoutSavingButton(): Locator {
+        return this.unsavedViewDialog.getByRole('button', {
+            name: 'Leave without saving',
+        });
+    }
+
+    /** Confirmation the application raises before it signs the user out. */
+    get signOutDialog(): Locator {
+        return this.page.getByRole('dialog', { name: 'Log out' });
+    }
+
+    get signOutConfirmButton(): Locator {
+        return this.signOutDialog.getByRole('button', { name: 'Log out' });
+    }
+
     // ==================== Actions ====================
 
     /**
@@ -66,6 +86,53 @@ export class DashboardPage {
      */
     async open(): Promise<void> {
         await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+    }
+
+    /**
+     * Arms auto-dismissal of the `Save your view?` navigation guard.
+     *
+     * The application raises it when leaving a view it considers dirty, which
+     * it decides for itself — a section that navigated cleanly on one run can
+     * be blocked on the next. Discarding is the read-only choice: `Leave
+     * without saving` changes nothing on the tenant.
+     *
+     * @returns {Promise<void>} Resolves once the handler is registered.
+     */
+    async dismissUnsavedViewPromptWhenShown(): Promise<void> {
+        await this.page.addLocatorHandler(
+            this.leaveWithoutSavingButton,
+            async (button) => {
+                await button.click();
+                await expect(button).toBeHidden();
+            }
+        );
+    }
+
+    /**
+     * Signs the user out through the account menu.
+     *
+     * The `You will lose all unsaved work` confirmation only appears when the
+     * current view holds unsaved state, so it cannot be clicked
+     * unconditionally — from a freshly opened dashboard the menu item signs
+     * out directly. A locator handler covers both paths without a visibility
+     * check that would race the navigation.
+     *
+     * This invalidates the session server-side, not only in this browser
+     * context, so the cached `storageState` is worthless afterwards. Only the
+     * `signout` project may call it — see `tests/iru/smoke/signout.spec.ts`.
+     *
+     * @returns {Promise<void>} Resolves once sign-out has been requested.
+     */
+    async signOut(): Promise<void> {
+        await this.page.addLocatorHandler(
+            this.signOutConfirmButton,
+            async (button) => {
+                await button.click();
+            }
+        );
+
+        await this.sidebar.openUserMenu();
+        await this.sidebar.signOutMenuItem.click();
     }
 
     /**

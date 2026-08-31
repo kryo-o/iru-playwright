@@ -1,6 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
-import { getAppUrl } from './helpers/iru/app';
 import { StorageStatePaths } from './enums/iru/iru';
 
 /**
@@ -51,12 +50,8 @@ export default defineConfig({
 
     /* Shared settings for all projects */
     use: {
-        /*
-         * Resolved once, here, so a missing or malformed APP_URL fails the run
-         * immediately by name rather than inside every test's first navigation.
-         * Page objects navigate with relative paths.
-         */
-        baseURL: getAppUrl(),
+        /* Tenant origin; page objects navigate with relative paths. */
+        baseURL: process.env.APP_URL,
 
         /* The application exposes test ids via data-testid attributes */
         testIdAttribute: 'data-testid',
@@ -101,13 +96,34 @@ export default defineConfig({
 
         {
             name: 'chromium',
-            testIgnore: /.*\.setup\.ts/,
+            testIgnore: [/.*\.setup\.ts/, /signout\.spec\.ts/],
             use: {
                 ...devices['Desktop Chrome'],
                 viewport: { width: 1920, height: 1080 },
                 storageState: StorageStatePaths.IRU,
             },
             dependencies: ['setup'],
+        },
+
+        /*
+         * Sign-out runs alone, after everything else. It invalidates the
+         * session server-side, so the cached storageState is dead once it has
+         * run — inside `chromium` it would strip the session from tests still
+         * executing in parallel. `dependencies` is what orders it last.
+         *
+         * retries: 0 because a retry would start from that dead session and
+         * fail on the sign-in screen, burying the real failure.
+         */
+        {
+            name: 'signout',
+            testMatch: /signout\.spec\.ts/,
+            retries: 0,
+            use: {
+                ...devices['Desktop Chrome'],
+                viewport: { width: 1920, height: 1080 },
+                storageState: StorageStatePaths.IRU,
+            },
+            dependencies: ['chromium'],
         },
     ],
 });

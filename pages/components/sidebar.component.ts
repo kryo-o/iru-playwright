@@ -25,7 +25,28 @@ export class SidebarComponent {
         return this.container.getByRole('link', { name, exact: true });
     }
 
+    get userMenu(): Locator {
+        return this.page.getByRole('menu');
+    }
+
+    /** Accessible name carries the account email; substring match avoids it. */
+    get signOutMenuItem(): Locator {
+        return this.userMenu.getByRole('menuitem', { name: 'Log out' });
+    }
+
     // ==================== Actions ====================
+
+    /**
+     * Opens the account menu at the foot of the rail.
+     *
+     * The chip is a plain `div` with no role, so the click targets the user
+     * name inside it and relies on the handler on the wrapper.
+     *
+     * @returns {Promise<void>} Resolves once the menu is on screen.
+     */
+    async openUserMenu(): Promise<void> {
+        await this.userName.click();
+    }
 
     /**
      * Opens a primary section by its sidebar link label.

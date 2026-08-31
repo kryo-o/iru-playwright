@@ -39,8 +39,9 @@ export const test = base.extend<FrameworkFixtures>({
 
     dashboardPage: async ({ page }, use) => {
         const dashboardPage = new DashboardPage(page);
-        // the announcement modal can surface at any point, on any section
+        // both can surface at any point, on any section
         await dashboardPage.dismissAnnouncementWhenShown();
+        await dashboardPage.dismissUnsavedViewPromptWhenShown();
         await use(dashboardPage);
     },
 });

@@ -1,0 +1,23 @@
+# Credentials are mounted at run time, never baked into an image layer.
+env
+
+# Reinstalled inside the image against the lockfile.
+node_modules
+
+# Run artefacts and cached session; all regenerated per run.
+.auth
+test-results
+playwright-report
+blob-report
+playwright/.cache
+.playwright-cli
+
+# Not needed to run tests.
+.git
+.github
+.husky
+.vscode
+dist
+Dockerfile
+docker-compose.yml
+.dockerignore

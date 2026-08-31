@@ -22,7 +22,7 @@ Read-only smoke coverage of the iru (formerly Kandji) dashboard: Auth0 sign-in w
 | **Imports**                 | Import `test`, `expect` and types from `fixtures/pom/test-options.ts` only (never `@playwright/test` in spec files)                                                                                                                                                                                                                                                                                                                                                                         |
 | **Selectors**               | Prioritize: `getByRole()` > `getByLabel()` > `getByPlaceholder()` > `getByText()` > `getByTestId()`                                                                                                                                                                                                                                                                                                                                                                                         |
 | **Type Safety**             | No `any` type; explicit return types on exported functions                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| **Sources of Truth**        | URLs and credentials come from `process.env.*` (documented in `README.md`, resolved through `helpers/iru/app.ts`); route paths, UI message strings and test ids come from `enums/iru/iru.ts`. Never hardcode                                                                                                                                                                                                                                                                                |
+| **Sources of Truth**        | URLs and credentials come from `process.env.*` (documented in `README.md`); route paths, UI message strings and test ids come from `enums/iru/iru.ts`. Never hardcode                                                                                                                                                                                                                                                                                                                       |
 | **Assertions**              | Web-first assertions only: `expect(locator).toBeVisible()`, never `waitForTimeout()`                                                                                                                                                                                                                                                                                                                                                                                                        |
 | **Structural Assertions**   | Assert structure -- headings, breadcrumbs, tabs, the shell -- never record values, counts or dates. Tenant data changes; a data change must never turn the suite red                                                                                                                                                                                                                                                                                                                        |
 | **Linting**                 | Code must pass ESLint and Prettier without warnings                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -76,7 +76,7 @@ Consequences, all intentional:
 - Expect up to 90 seconds of idle waiting inside the setup sign-in when runs are back to back; a single run from cold is immediate.
 - Lowering the step gap in `helpers/iru/totp.ts` reintroduces `The code you entered is invalid`.
 - Never re-add a per-test sign-in. One MFA challenge per run is the budget; the tenant's MFA endpoint is a real service, not a fixture.
-- `APP_URL` must be the tenant origin, never a mid-login `auth.kandji.io/u/login?state=...` link -- that `state` is single-use. `helpers/iru/app.ts` validates this.
+- `APP_URL` must be the tenant origin, never a mid-login `auth.kandji.io/u/login?state=...` link -- that `state` is single-use. Nothing validates this: a wrong value silently resolves to the Auth0 host and the suite fails as if the app were broken.
 
 ---
 
@@ -124,12 +124,13 @@ A third: an error assertion that passes alone but fails under parallel load is a
 enums/iru/iru.ts                       -- Routes, UI message strings, test ids
 fixtures/pom/test-options.ts           -- Single import point for test, expect and types
 fixtures/pom/page-object-fixture.ts    -- Page object fixture registration
-helpers/iru/app.ts                     -- APP_URL resolution and validation
 helpers/iru/login.ts                   -- Full sign-in flow (credentials + TOTP)
 helpers/iru/totp.ts                    -- One-time code generation and window guards
 pages/iru/                             -- Page objects
 pages/components/                      -- Reusable UI components
 test-data/static/iru/                  -- Curated static test data
 tests/iru/smoke/                       -- Login rendering and rejection, authenticated dashboard
+docs/smoke-suite.md                    -- Coverage rationale: what is tested, what is not, and why
+Dockerfile                             -- Container image; its FROM tag MUST match @playwright/test in package.json
 .claude/skills/playwright-cli/         -- Reference docs for the mandated exploration tool
 ```

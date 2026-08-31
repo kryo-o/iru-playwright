@@ -1,3 +1,4 @@
- # Shell scripts and Dockerfiles must use LF — CRLF breaks bash shebangs and Docker RUN directives in Linux containers
-*.sh text eol=lf
-Dockerfile text eol=lf
+# Normalise every text file to LF, in the repository and in the working tree.
+# Windows checks out CRLF by default, and CRLF breaks bash shebangs and Docker
+# RUN directives the moment the file is copied into a Linux container.
+* text=auto eol=lf

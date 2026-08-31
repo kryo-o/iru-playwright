@@ -9,6 +9,7 @@
         "test:headed": "npx playwright test --headed",
         "test:ui": "npx playwright test --ui",
         "test:debug": "npx playwright test --debug",
+        "test:docker": "docker compose run --rm tests",
         "report": "npx playwright show-report",
         "lint": "npx eslint .",
         "lint:fix": "npx eslint . --fix",
